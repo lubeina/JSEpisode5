@@ -43,11 +43,17 @@ class Point {
  **********************************************************/
 class Wallet {
   // implement Wallet!
-  constructor(money = 0) {}
+  constructor(money = 0) {
+    this.money = money;
+  }
 
-  credit = amount => {};
+  credit = amount => {
+    this.money += amount;
+  };
 
-  debit = amount => {};
+  debit = amount => {
+    this.money -= amount;
+  };
 }
 
 /**********************************************************
@@ -62,6 +68,12 @@ class Wallet {
  * let person = new Person(name, x, y);
  **********************************************************/
 class Person {
+  constructor(name, x, y) {
+    this.name = name;
+    this.location = new Point(x, y);
+  }
+  wallet = new Wallet();
+  moveTo = point => (this.location = point);
   // implement Person!
 }
 
@@ -80,7 +92,18 @@ class Person {
  *
  * new vendor = new Vendor(name, x, y);
  **********************************************************/
-class Vendor {
+class Vendor extends Person {
+  constructor(name, x, y) {
+    super(name, x, y);
+    this.range = 5;
+    this.price = 1;
+  }
+  sellTo = (customer, numberOfIceCreams) => {
+    this.location = customer.location;
+    customer.wallet.debit(numberOfIceCreams * this.price);
+    this.wallet.credit(numberOfIceCreams * this.price);
+  };
+
   // implement Vendor!
 }
 
@@ -100,7 +123,22 @@ class Vendor {
  *
  * new customer = new Customer(name, x, y);
  **********************************************************/
-class Customer {
+class Customer extends Person {
+  constructor(name, x, y) {
+    super(name, x, y);
+    this.wallet.credit(10);
+  }
+  _isInRange = vendor =>
+    this.location.distanceTo(vendor.location) <= vendor.range;
+  _haveEnoughMoney = (vendor, numberOfIceCreams) =>
+    this.wallet.money >= numberOfIceCreams * vendor.price;
+  requestIceCream = (vendor, numberOfIceCreams) => {
+    if (
+      this._isInRange(vendor) &&
+      this._haveEnoughMoney(vendor, numberOfIceCreams)
+    )
+      vendor.sellTo(this, numberOfIceCreams);
+  };
   // implement Customer!
 }
 
